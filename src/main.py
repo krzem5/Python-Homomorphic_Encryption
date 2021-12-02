@@ -42,43 +42,50 @@ def calc_matrix(M):
 def encode(M,N,v):
 	m=[Complex(e.r,e.i) for e in N]
 	o=[None for _ in range(0,M)]
+	ii=0
 	for i in range(0,M):
-		c=m[i*(M+1)]
+		c=m[ii+i]
 		n=c.r**2+c.i**2
 		f=Complex(c.r/n,-c.i/n)
+		jj=0
 		for j in range(0,M):
 			if (i==0):
 				o[j]=Complex(v[j],0)
 			if (i!=j):
-				c=m[j*M+i]
+				c=m[jj+i]
 				r=Complex(c.r*f.r-c.i*f.i,c.r*f.i+c.i*f.r)
 				for k in range(0,M):
-					c=m[i*M+k]
-					m[j*M+k].r-=r.r*c.r-r.i*c.i
-					m[j*M+k].i-=r.r*c.i+r.i*c.r
+					c=m[ii+k]
+					m[jj+k].r-=r.r*c.r-r.i*c.i
+					m[jj+k].i-=r.r*c.i+r.i*c.r
 				c=o[i]
 				o[j].r-=r.r*c.r-r.i*c.i
 				o[j].i-=r.r*c.i+r.i*c.r
 			if (i==M-1):
-				c=m[j*(M+1)]
+				c=m[jj+j]
 				d=c.r**2+c.i**2
 				t=o[j].r*c.r+o[j].i*c.i
 				o[j].i=(o[j].i*c.r-o[j].r*c.i)/d
 				o[j].r=t/d
+			jj+=M
+		ii+=M
 	return o
 
 
 
 def decode(M,N,p):
 	o=[None for _ in range(0,M)]
+	ii=0
 	for i in range(0,M):
 		if (abs(p[0].i)>1e-8):
 			raise RuntimeError
 		v=Complex(p[0].r,0)
 		for j in range(1,M):
-			v.r+=p[j].r*N[i*M+j].r-p[j].i*N[i*M+j].i
-			v.i+=p[j].r*N[i*M+j].i+p[j].i*N[i*M+j].r
+			k=ii+j
+			v.r+=p[j].r*N[k].r-p[j].i*N[k].i
+			v.i+=p[j].r*N[k].i+p[j].i*N[k].r
 		o[i]=v
+		ii+=M
 	return o
 
 
@@ -92,22 +99,28 @@ def add_poly(a,b,M):
 
 
 def mult_poly(a,b,M):
-	o=[None for _ in range(0,M*2-1)]
-	for i in range(0,M*2-1):
+	o=[None for _ in range(0,M)]
+	for i in range(0,M):
 		o[i]=Complex(0,0)
 	for i in range(0,M):
 		c=a[i]
+		k=i
 		for j in range(0,M):
-			o[i+j].r+=c.r*b[j].r-c.i*b[j].i
-			o[i+j].i+=c.r*b[j].i+c.i*b[j].r
-	for i in range(M*2-2,M-1,-1):
-		o[i-M].r-=o[i].r
-		o[i-M].i-=o[i].i
+			cr=c.r*b[j].r-c.i*b[j].i
+			ci=c.r*b[j].i+c.i*b[j].r
+			if (k>=M):
+				l=k-M
+				o[l].r-=cr
+				o[l].i-=ci
+			else:
+				o[k].r+=cr
+				o[k].i+=ci
+			k+=1
 	return o[:M]
 
 
 
-M=3
+M=4
 N=calc_matrix(M)
 u=encode(M,N,[1,2,3,4])
 v=encode(M,N,[-1,2,3,-4])
