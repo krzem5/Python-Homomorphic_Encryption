@@ -107,7 +107,7 @@ def mult_poly(a,b,M):
 
 
 
-M=4
+M=3
 N=calc_matrix(M)
 u=encode(M,N,[1,2,3,4])
 v=encode(M,N,[-1,2,3,-4])
